@@ -1,0 +1,17 @@
+Certificat racine :
+
+openssl genrsa -out ca.key 2048
+openssl req -x509 -new -key ca.key -out ca.pem -days 365 -nodes
+openssl x509 -in ca.pem -out ca.crt -inform pem -outform der
+
+
+Certificat client :
+
+openssl genrsa -out Alka.key 1024
+openssl req -x509 -new -key Alka.key -out Alka.csr
+openssl x509 -x509toreq -days 365 -in Alka.csr -signkey Alka.key -out Alka.req
+
+
+Signer le certificat du client :
+
+openssl ca -config openssl-ca.txt -infiles Alka.req
