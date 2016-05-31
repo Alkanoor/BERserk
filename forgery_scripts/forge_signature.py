@@ -28,7 +28,7 @@ message = fd.read()
 fd.close()
 
 fd = open(args[1])
-signature = fd.read().encode("hex")
+signature = Generator.strToHex(fd.read())
 fd.close()
 
 print "message: %s\n" % message

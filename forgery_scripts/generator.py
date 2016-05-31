@@ -10,6 +10,22 @@ class Generator():
     http://www.intelsecurity.com/resources/wp-berserk-analysis-part-1.pdf"""
 
     @classmethod
+    def strToHex(cls, str):
+        return str.encode("hex")
+
+    @classmethod
+    def hexToInt(cls, hex):
+        return int(hex, 16)
+
+    @classmethod
+    def IntToHex(cls, int):
+        return hex(int)
+
+    @classmethod
+    def cubeHex(cls, hex):
+        return Generator.IntToHex(Generator.hexToInt(hex)**3)
+
+    @classmethod
     def forge_prefix(cls, s, hashSize, publicKeyModulo):
         zd = BITLEN - hashSize
         repas = (s << zd)
