@@ -4,4 +4,6 @@ check-message:
 
 check-spoof:
 	nss/verify inputs/message certifs/spoof_signer.crt certifs/root.crt
-	
+
+generate:
+	forgery_scripts/forge_signature.py inputs/message_a_signer.txt certifs/CA/signature
