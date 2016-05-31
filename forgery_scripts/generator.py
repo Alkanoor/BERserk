@@ -6,11 +6,11 @@ class Generator():
     def digest(cls, message):
         return hashlib.sha256(message).hexdigest()
 
+    """This methods have been create with the help of the documentation found here :
+    http://www.intelsecurity.com/resources/wp-berserk-analysis-part-1.pdf"""
+
     @classmethod
     def forge_prefix(cls, s, hashSize, publicKeyModulo):
-        """This method has been create with the help of the documentation found here :
-        http://www.intelsecurity.com/resources/wp-berserk-analysis-part-1.pdf
-        """
         zd = BITLEN - hashSize
         repas = (s << zd)
         repa = (repas >> zd)
@@ -39,3 +39,34 @@ class Generator():
             if a2 == repa:
                 return s1
         return s
+
+    @classmethod
+    def forge_odd(cls, h, w):
+        y = long(1)
+        mask = long(1)
+        for i in range(1, w):
+            mask = mask | (1 << i)
+            if ((cube(y)^h) & mask) != 0:
+                y = y + (1 << i)
+        return y
+
+    @classmethod
+    def forge_even(cls, h, N, w):
+        mask = (1 << w) - 1
+        h1 = (h + N) & mask
+        s1 = Generator.forge_odd(h1, w)
+        y = 0
+        for i in range((BITLEN + 5)/3, w, -1):
+            y = y | (1 << i)
+            c = cube(y + s1)
+            if (c > N) and (c < (2 * N)):
+                break
+            elif c > (2 * N):
+                y = y & (~(1 << i))
+        return (y + s1)
+
+    def forge_suffix(cls, h, w, N):
+        if (h & 1) == 0:
+            return Generator.forge_even(h, N, w)
+        else:
+            return Generator.forge_odd(h, w)
