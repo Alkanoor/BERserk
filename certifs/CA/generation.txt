@@ -1,8 +1,7 @@
 Certificat racine :
 
 openssl genrsa -out ca.key 2048
-openssl req -x509 -new -key ca.key -out ca.pem -days 365 -nodes
-openssl x509 -in ca.pem -out ca.crt -inform pem -outform der
+openssl req -x509 -new -key ca.key -out ca.crt -days 365 -nodes
 
 
 Certificat client :
@@ -14,4 +13,11 @@ openssl x509 -x509toreq -days 365 -in Alka.csr -signkey Alka.key -out Alka.req
 
 Signer le certificat du client :
 
-openssl ca -config openssl-ca.txt -infiles Alka.req
+openssl x509 -req -in Alka.req -out Alka.crt -CA ca.crt -CAkey ca.key -CAcreateserial -CAserial ca.srl
+
+
+Pour signer/vérifier :
+
+openssl smime -sign -md sha256 -binary -noattr -in content -out signature -outform der -inkey Alka.key -signer Alka.crt
+openssl smime -verify -in signature -inform der -content content -CAfile ca.crt -signer Alka.crt
+=> affiche verification successful
