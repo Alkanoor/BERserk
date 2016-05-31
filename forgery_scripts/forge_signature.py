@@ -9,6 +9,7 @@ Can be used with :
 
 
 from optparse import OptionParser
+from forge_libs import Generator
 import sys
 
 parser = OptionParser()
@@ -31,3 +32,8 @@ fd.close()
 
 print "message: %s/n" % message
 print "signature : %s/n" % signature
+
+sha256 = Generator.digest(message)
+
+print sha256
+
