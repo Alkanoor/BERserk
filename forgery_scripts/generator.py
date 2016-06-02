@@ -18,7 +18,7 @@ class Generator():
         return int(hex, 16)
 
     @classmethod
-    def IntToHex(cls, int):
+    def intToHex(cls, int):
         return hex(int)
 
     @classmethod
@@ -26,7 +26,14 @@ class Generator():
         return Generator.IntToHex(Generator.hexToInt(hex)**3)
 
     @classmethod
-    def forge_prefix(cls, s, hashSize, publicKeyModulo):
+    def icrbt(cls, hex, size):
+        a = Generator.hexToInt(hex)
+        b = a**(1/3)
+        c = int(b)
+        return Generator.intToHex(c)
+
+    @classmethod
+    def forge_prefix(cls, s, hashSize, publicKeyModulo, BITLEN):
         zd = BITLEN - hashSize
         repas = (s << zd)
         repa = (repas >> zd)
@@ -37,7 +44,7 @@ class Generator():
         while True:
             c = (cmax + cmin + 1)/2
             a1 = repas + c
-            s = icbrt(a1, BITLEN)
+            s = Generator.icbrt(a1, BITLEN)
             a2 = ((s * s * s) >> zd)
             if a2 == repa:
                 break
@@ -62,7 +69,7 @@ class Generator():
         mask = long(1)
         for i in range(1, w):
             mask = mask | (1 << i)
-            if ((cube(y)^h) & mask) != 0:
+            if ((Generator.cubeHex(y)^h) & mask) != 0:
                 y = y + (1 << i)
         return y
 
@@ -74,15 +81,27 @@ class Generator():
         y = 0
         for i in range((BITLEN + 5)/3, w, -1):
             y = y | (1 << i)
-            c = cube(y + s1)
+            c = Generator.cubeHex(y + s1)
             if (c > N) and (c < (2 * N)):
                 break
             elif c > (2 * N):
                 y = y & (~(1 << i))
         return (y + s1)
 
+    @classmethod
     def forge_suffix(cls, h, w, N):
         if (h & 1) == 0:
             return Generator.forge_even(h, N, w)
         else:
             return Generator.forge_odd(h, w)
+
+    @classmethod
+    def forge_middle(cls, HASHLEN, signature_high, signature_low, target_EM_middle_mask, target_EM_middle):
+        for x in xrange(1, 0xffff):
+            signature_middle_x = x << HASHLEN
+            signature_x = signature_high | signature_middle_x | signature_low
+            em = signature_x**3
+            if (em & target_EM_middle_mask == target_EM_middle):
+                # forged signature found
+                signature = signature_x
+                return (x, signature)
