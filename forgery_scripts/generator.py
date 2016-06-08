@@ -26,11 +26,9 @@ class Generator():
         return Generator.intToHex(Generator.hexToInt(hex)**3)
 
     @classmethod
-    def icrbt(cls, hex, size):
-        a = Generator.hexToInt(hex)
-        b = a**(1/3)
-        c = int(b)
-        return Generator.intToHex(c)
+    def icbrt(cls, hex, size):
+        b = hex**(1/3)
+        return b
 
     @classmethod
     def forge_prefix(cls, s, hashSize, publicKeyModulo, BITLEN):
@@ -69,19 +67,19 @@ class Generator():
         mask = long(1)
         for i in range(1, w):
             mask = mask | (1 << i)
-            if ((Generator.cubeHex(y)^h) & mask) != 0:
+            if (((y**3)^h) & mask) != 0:
                 y = y + (1 << i)
         return y
 
     @classmethod
-    def forge_even(cls, h, N, w):
+    def forge_even(cls, h, N, w, BITLEN):
         mask = (1 << w) - 1
         h1 = (h + N) & mask
         s1 = Generator.forge_odd(h1, w)
         y = 0
         for i in range((BITLEN + 5)/3, w, -1):
             y = y | (1 << i)
-            c = Generator.cubeHex(y + s1)
+            c = (y + s1)**3
             if (c > N) and (c < (2 * N)):
                 break
             elif c > (2 * N):

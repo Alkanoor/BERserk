@@ -44,7 +44,6 @@ sha256 = Generator.digest(message)
 
 print "message digest sha256: %s\n" % sha256
 
-
 output = subprocess.Popen(["openssl", "asn1parse", "-in", args[2], "-inform", "PEM"], stdout=subprocess.PIPE).communicate()[0]
 value = output.split("rsaEncryption")[1].split("sha256WithRSAEncryption")[0].split("NULL")[1].split(":d=")[0]
 offset = value.replace(" ","").replace("\n","")
@@ -53,3 +52,7 @@ offset = value.replace(" ","").replace("\n","")
 output = subprocess.Popen(["openssl", "asn1parse", "-in", args[2], "-inform", "PEM", "-strparse", offset], stdout=subprocess.PIPE).communicate()[0]
 publicKeyModulo = output.split("INTEGER")[1].split("\n")[0].split(":")[1]
 print "puplicKeyModulo: %s\n" % publicKeyModulo
+
+print Generator.forge_prefix(Generator.hexToInt(sha256),256,Generator.hexToInt(publicKeyModulo),928)
+
+print Generator.intToHex(Generator.forge_suffix(Generator.hexToInt(sha256),256,Generator.hexToInt(publicKeyModulo)))
