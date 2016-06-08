@@ -23,7 +23,7 @@ class Generator():
 
     @classmethod
     def cubeHex(cls, hex):
-        return Generator.IntToHex(Generator.hexToInt(hex)**3)
+        return Generator.intToHex(Generator.hexToInt(hex)**3)
 
     @classmethod
     def icrbt(cls, hex, size):
