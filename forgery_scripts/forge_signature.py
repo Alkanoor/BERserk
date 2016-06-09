@@ -53,6 +53,23 @@ output = subprocess.Popen(["openssl", "asn1parse", "-in", args[2], "-inform", "P
 publicKeyModulo = output.split("INTEGER")[1].split("\n")[0].split(":")[1]
 print "puplicKeyModulo: %s\n" % publicKeyModulo
 
-print Generator.forge_prefix(Generator.hexToInt(sha256),256,Generator.hexToInt(publicKeyModulo),928)
 
-print Generator.intToHex(Generator.forge_suffix(Generator.hexToInt(sha256),256,Generator.hexToInt(publicKeyModulo)))
+print Generator.hexToInt(sha256)
+print Generator.hexToInt(publicKeyModulo)
+
+
+for i in range(256, 1024):
+    a = Generator.forge_prefix(Generator.hexToInt(sha256), 256, Generator.hexToInt(publicKeyModulo), i)
+    if a != 0:
+        print i
+        print a
+        break
+print "fail"
+
+Generator.forge_prefix(Generator.hexToInt(sha256),256,Generator.hexToInt(publicKeyModulo),512)
+
+signature_low = Generator.forge_suffix(Generator.hexToInt(sha256),256,Generator.hexToInt(publicKeyModulo))
+print Generator.intToHex(signature_low)
+
+target_EM_Low = signature_low**3
+print Generator.intToHex(target_EM_Low)

@@ -1,4 +1,5 @@
 import hashlib
+import decimal
 
 class Generator():
 
@@ -15,7 +16,7 @@ class Generator():
 
     @classmethod
     def hexToInt(cls, hex):
-        return int(hex, 16)
+        return long(hex, 16)
 
     @classmethod
     def intToHex(cls, int):
@@ -27,8 +28,13 @@ class Generator():
 
     @classmethod
     def icbrt(cls, hex, size):
-        b = hex**(1/3)
-        return b
+        D = decimal.Decimal
+        n = D(hex)
+        with decimal.localcontext() as ctx:
+            ctx.prec = hex.bit_length()
+            a = D(1)/D(3)
+            x = n**a
+            return long(x)
 
     @classmethod
     def forge_prefix(cls, s, hashSize, publicKeyModulo, BITLEN):
@@ -37,10 +43,12 @@ class Generator():
         repa = (repas >> zd)
         cmax = publicKeyModulo
         ctop = cmax
-        cmin = 0
-        s = 0
+        cmin = long(0)
+        s = long(0)
+        i = 0
         while True:
-            c = (cmax + cmin + 1)/2
+            i = i + 1
+            c = (cmax + cmin + long(1))/long(2)
             a1 = repas + c
             s = Generator.icbrt(a1, BITLEN)
             a2 = ((s * s * s) >> zd)
@@ -48,6 +56,7 @@ class Generator():
                 break
             if c == cmax or c == cmin:
                 print " *** Error: The value cannot be found ***"
+                print i
                 return 0
             if a2 > repa:
                 cmax = c
