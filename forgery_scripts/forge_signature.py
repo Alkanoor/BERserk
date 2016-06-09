@@ -56,17 +56,20 @@ print "puplicKeyModulo: %s\n" % publicKeyModulo
 
 print Generator.hexToInt(sha256)
 print Generator.hexToInt(publicKeyModulo)
-
-
-for i in range(256, 1024):
+"""
+i = 256
+while(i < 1200):
     a = Generator.forge_prefix(Generator.hexToInt(sha256), 256, Generator.hexToInt(publicKeyModulo), i)
+    print i
+    i = i + 8
     if a != 0:
         print i
         print a
         break
 print "fail"
+"""
 
-Generator.forge_prefix(Generator.hexToInt(sha256),256,Generator.hexToInt(publicKeyModulo),512)
+print Generator.forge_prefix(Generator.hexToInt(sha256),256,Generator.hexToInt(publicKeyModulo),776)
 
 signature_low = Generator.forge_suffix(Generator.hexToInt(sha256),256,Generator.hexToInt(publicKeyModulo))
 print Generator.intToHex(signature_low)
