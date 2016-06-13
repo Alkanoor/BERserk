@@ -31,7 +31,7 @@ class Generator():
         D = decimal.Decimal
         n = D(hex)
         with decimal.localcontext() as ctx:
-            ctx.prec = hex.bit_length()
+            ctx.prec = size#hex.bit_length()
             a = D(1)/D(3)
             x = n**a
             return long(x)
