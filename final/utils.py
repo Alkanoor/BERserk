@@ -2,6 +2,102 @@ import binascii
 import random
 import math
 
+HASH_ASN1 = {
+    'MD5': '\x30\x20\x30\x0c\x06\x08\x2a\x86\x48\x86\xf7\x0d\x02\x05\x05',
+    'SHA-1': '\x30\x21\x30\x09\x06\x05\x2b\x0e\x03\x02\x1a\x05',
+    'SHA-256': '\x30\x31\x30\x0d\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x01\x05',
+    'SHA-512': '\x30\x51\x30\x0d\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x03\x05'
+}
+
+HASH_SIZE = {
+    'MD5': 0x10,
+    'SHA-1': 0x14,
+    'SHA-256': 0x20,
+    'SHA-512': 0x40
+}
+
+
+#verify allow us to check whether attack worked or not
+#hash :      (byte string) to be equal to when signature is decrypted with pub key
+#signature : (byte string) given from who signed the hash
+#pub_key :   (big int) modulus in RSA
+def verify(hash, signature, pub_key):
+    n_bits = int(math.ceil(math.log(pub_key)/math.log(2.)))
+
+    hash_int = int(binascii.hexlify(hash),16)
+    signature_int = int(binascii.hexlify(signature),16)
+    decrypted_int = pow(signature_int,3,pub_key)
+
+    decrypted_hex = format(decrypted_int,'x')
+    if len(decrypted_hex)%2 == 1:
+        decrypted_hex = '0'+decrypted_hex
+    decrypted_hex = '0'*(n_bits//4-len(decrypted_hex))+decrypted_hex
+    decrypted = binascii.unhexlify(decrypted_hex)
+
+    print("Signature deciphering : "+decrypted_hex)
+
+    # signature  marker
+    if decrypted[0:2] != b'\x00\x01':
+        raise Exception('Bad signature or bad format')
+
+    i = 3
+    while decrypted[i] == b'\xff':
+        i += 1
+
+    if decrypted[i] != b'\x00':
+        raise Exception('Bad signature or bad format')
+
+    i += 1
+    hash_type = 'None'
+    for method in HASH_ASN1:
+        if decrypted[i:i+len(HASH_ASN1[method])] == HASH_ASN1[method]:
+            hash_type = method
+            i += len(HASH_ASN1[method])
+            break
+
+    if hash_type == 'None':
+        raise Exception('Hash type not supported or bad format')
+
+    length,offset = BER_parse_length(decrypted[i:])
+
+    i += offset
+    if decrypted[i] != '\x04':
+        raise Exception('Bad signature or bad format')
+
+    i += 1
+    length,offset = BER_parse_length(decrypted[i:])
+    i += offset
+    if hash != decrypted[i:i+length]:
+         raise Exception('Verification failed')
+
+    return True
+
+def craft_fake_sig(hex_message,hash_type,N):
+    n_bits = int(math.ceil(math.log(N)/math.log(2.)))
+
+    prefix = "0001FFFFFFFFFFFFFFFF00"+binascii.hexlify(HASH_ASN1[hash_type])
+    hash_length = HASH_SIZE[hash_type]
+
+    garbage_size_before_04FF = n_bits//8-len(prefix)//2-len(hex_message)//2-130
+
+    prefix += format(garbage_size_before_04FF|0x80,'x')
+
+    cbrt_prefix = find_cube_root_prefix(prefix,n_bits)
+    #cbrt_middle = find_cube_root_prefix("04FF",n_bits-garbage_size_before_04FF*8-len(prefix)*4) doesn't work : we must bf
+    cbrt_suffix = find_cube_root_suffix(hex_message,N)
+
+    min_bits = int(math.ceil(math.log(cbrt_suffix)/math.log(2.)))
+
+    good = cbrt_prefix+cbrt_suffix+int(random.random()*(1<<60))*(1<<min_bits)
+    final = i_to_s(root(good))
+    while final[len(prefix)//2+garbage_size_before_04FF-1] != '\x04' or final[len(prefix)//2+garbage_size_before_04FF] != '\xff':
+        good = cbrt_prefix+cbrt_suffix+int(random.random()*(1<<60))*(1<<min_bits)
+        final = i_to_s(root(good))
+
+    ret = i_to_s(good)
+    return "\x00"*(n_bits//8-len(ret))+ret
+
+
 
 def BER_parse_length(length_field):
     len_value = 0

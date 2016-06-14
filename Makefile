@@ -5,5 +5,5 @@ check-message:
 check-spoof:
 	nss/verify inputs/message certifs/spoof_signer.crt certifs/root.crt
 
-generate:
-	forgery_scripts/forge_signature.py inputs/message_a_signer.txt certifs/signature certifs/Alka.crt
+forge:
+	final/forge_verify.py final/to_sign final/rsa_e_3
