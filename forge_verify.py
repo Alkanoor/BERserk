@@ -2,7 +2,7 @@
 
 '''
 Can be used with :
-./forge_verify.py to_sign rsa_e_3
+./forge_verify.py to_sign.txt rsa_e_3
 '''
 
 from optparse import OptionParser
@@ -11,6 +11,7 @@ import subprocess
 import hashlib
 import utils
 import binascii
+import os
 
 parser = OptionParser()
 parser.usage = """%prog messageFile rsaFile\n"""
@@ -45,16 +46,17 @@ print "PublicKey: %s\n" % publicKey
 #Get real signature
 asn1 = "3031300d060960864801650304020105000420" + sha256
 hex_data = asn1.decode("hex")
-with open('base_hash_to_be_signed', 'wb') as f:
+with open('base_hash_to_be_signed.bin', 'wb') as f:
     f.write(bytearray(hex_data))
-output = subprocess.Popen(["openssl", "rsautl", "-inkey", args[1], "-sign", "-in", "base_hash_to_be_signed", "-out", "signed"],stdout=subprocess.PIPE).communicate()[0]
+output = subprocess.Popen(["openssl", "rsautl", "-inkey", args[1], "-sign", "-in", "base_hash_to_be_signed.bin", "-out", "signed.bin"],stdout=subprocess.PIPE).communicate()[0]
 
 
-with open('signed','r') as f:
+with open('signed.bin','r') as f:
     content = f.read()
 print "Real signature: %s\n" % hex(long(binascii.hexlify(content),16))
 result = (utils.verify(binascii.unhexlify(sha256),content,long(publicKey, 16)))
 print "\nVerification success: %s\n" % result
+os.system("rm -f base_hash_to_be_signed.bin signed.bin")
 
 print "############### Forging signature ###############"
 #Forge signature

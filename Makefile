@@ -1,9 +1,6 @@
 
-check-message:
-	nss/verify inputs/message certifs/signer.crt certifs/root.crt
-
-check-spoof:
-	nss/verify inputs/message certifs/spoof_signer.crt certifs/root.crt
+set-up:
+	openssl genrsa -out rsa_e_3 -3
 
 forge:
-	final/forge_verify.py final/to_sign final/rsa_e_3
+	./forge_verify.py ./to_sign.txt ./rsa_e_3
