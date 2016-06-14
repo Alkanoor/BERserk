@@ -82,14 +82,18 @@ class Generator():
 
     @classmethod
     def forge_even(cls, h, N, w, BITLEN):
-        mask = (1 << w) - 1
+        mask = (long(1) << w) - long(1)
         h1 = (h + N) & mask
+        print Generator.intToHex(h1)
         s1 = Generator.forge_odd(h1, w)
         y = 0
+        print "test"
         for i in range((BITLEN + 5)/3, w, -1):
             y = y | (1 << i)
+            print i
             c = (y + s1)**3
             if (c > N) and (c < (2 * N)):
+                print i
                 break
             elif c > (2 * N):
                 y = y & (~(1 << i))
@@ -98,7 +102,7 @@ class Generator():
     @classmethod
     def forge_suffix(cls, h, w, N):
         if (h & 1) == 0:
-            return Generator.forge_even(h, N, w)
+            return Generator.forge_even(h, N, w, 2048)
         else:
             return Generator.forge_odd(h, w)
 

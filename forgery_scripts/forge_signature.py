@@ -59,7 +59,7 @@ print "puplicKeyModulo: %s\n" % publicKeyModulo
 #1264 => 123
 #research 116
 
-
+"""
 i = 256
 while(i < 1650):
     a = Generator.forge_prefix(Generator.hexToInt(signature), 256, Generator.hexToInt(publicKeyModulo), i)
@@ -76,14 +76,25 @@ while(i < 1650):
 
 print "fail"
 
+"""
 
-signature_high = Generator.forge_prefix(Generator.hexToInt(signature),256,Generator.hexToInt(publicKeyModulo),1280)
+signature_high = Generator.forge_prefix(Generator.hexToInt(signature),256,Generator.hexToInt(publicKeyModulo),2048)
 print "signature hight: %s\n" % Generator.intToHex(signature_high)
 
 target_EM_high = signature_high ** 3
 print "target_EM_high: %s\n" % Generator.intToHex(target_EM_high)
 
 signature_low = Generator.forge_suffix(Generator.hexToInt(sha256),256,Generator.hexToInt(publicKeyModulo))
+print "signature_low: %s\n" % Generator.intToHex(signature_low)
+
+target_EM_Low = signature_low**3
+print "target_EM_Low: %s\n" % Generator.intToHex(target_EM_Low)
+
+print "sha256 + 1"
+sha256 = Generator.hexToInt(sha256) + long(1)
+print "message digest sha256: %s\n" % Generator.intToHex(sha256)
+
+signature_low = Generator.forge_suffix(sha256,256,Generator.hexToInt(publicKeyModulo))
 print "signature_low: %s\n" % Generator.intToHex(signature_low)
 
 target_EM_Low = signature_low**3
