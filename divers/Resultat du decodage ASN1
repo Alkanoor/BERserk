@@ -1,0 +1,21 @@
+openssl sha256 to_sign 
+SHA256(to_sign)= b0404b803c060d979488c4a145a5c4cb82c80102a0990967b2d55dc6601f7fd5
+
+openssl asn1parse -in good_sig_asn1 -inform der
+    0:d=0  hl=2 l=  49 cons: SEQUENCE          
+    2:d=1  hl=2 l=  13 cons: SEQUENCE          
+    4:d=2  hl=2 l=   9 prim: OBJECT            :sha256
+   15:d=2  hl=2 l=   0 prim: NULL              
+   17:d=1  hl=2 l=  32 prim: OCTET STRING      [HEX DUMP]:B0404B803C060D979488C4A145A5C4CB82C80102A0990967B2D55DC6601F7FD5
+
+
+openssl asn1parse -in fake_sig_asn1 -inform der
+    0:d=0  hl=2 l=  49 cons: SEQUENCE          
+    2:d=1  hl=2 l=  13 cons: SEQUENCE          
+    4:d=2  hl=2 l=   9 prim: OBJECT            :sha256
+Error in encoding
+3073853116:error:0D07209B:asn1 encoding routines:ASN1_get_object:too long:asn1_lib.c:142:
+
+
+
+Moralité : on trompe le parseur NSS, notre décodeur, mais pas openssl
