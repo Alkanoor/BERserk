@@ -1,0 +1,33 @@
+openssl genrsa -out rsa_e_3 -3
+
+Ecrire un message dans to_sign.
+Calculer le shaX du message :
+
+openssl sha256 to_sign
+
+Si le dernier bit n'est pas à 1, cela a des chances de rater, donc pour être certain que ça marche, il faut changer le message jusqu'à avoir un hash impair
+
+Ecrire la valeur lue dans les octets de base_hash_to_be_signed (le hash dans son ASN1)
+
+Signer le fichier :
+openssl rsautl -inkey rsa_e_3 -sign -in base_hash_to_be_signed -out signed
+
+On peut vérifier avec openssl que c'est bon :
+openssl rsautl -inkey rsa_e_3 -verify -in signed -text
+
+On peut aussi vérifier que notre script fonctionne (voir dans clean.py) :
+
+with open('signed','r') as f:
+    content = f.read()
+
+N = int("00:d2:2a:7b:13:ee:c0:eb:e6:6e:09:10:4e:d3:30:bb:db:3a:73:d7:ab:2c:9d:19:8b:ac:0c:de:e5:08:ff:8c:4b:07:22:e7:98:b0:06:1e:16:64:a0:45:2d:8f:c4:af:34:85:a7:d5:c8:56:0c:76:16:74:31:18:21:08:3a:b2:a2:18:dd:2a:9f:bc:7b:af:ba:92:9b:7f:10:b5:76:5b:ac:88:4e:f2:da:e3:ef:27:df:f7:75:fe:4a:6a:ae:04:3e:94:b9:7a:43:4a:1d:f8:c1:d7:d4:3c:62:69:c2:af:fa:44:ed:1b:09:c9:5f:59:38:32:bc:b1:0d:07:d4:22:7c:e3:f0:36:9b:c1:21:85:fa:8f:a0:52:da:91:d4:04:df:5e:5f:61:b6:6e:9b:00:af:c8:b1:96:f4:2b:cf:b6:00:2e:5d:ff:aa:03:d7:10:68:ab:a3:64:5a:67:a1:6b:95:74:7d:ce:80:4c:eb:55:55:3d:23:68:6f:33:28:04:ba:60:07:09:b6:a0:c2:3b:5c:6c:2a:74:6f:44:b6:86:88:62:a4:4b:11:90:23:c5:a2:9b:75:f0:98:5e:8c:bf:ea:54:f0:13:be:a1:73:26:f5:c0:5f:8d:6e:8a:3a:97:19:51:ff:21:ca:d7:66:51:85:dd:29:a5:c3:80:90:88:9b".replace(':',''),16)
+hash = "b0404b803c060d979488c4a145a5c4cb82c80102a0990967b2d55dc6601f7fd5"
+print(verify(binascii.unhexlify(hash),content,N))
+=> renvoie True
+
+On arrive à forger des mauvais messages bien lus :
+tmp = craft_fake_sig(hash,'SHA-256',N)
+print(verify(binascii.unhexlify(hash),tmp,N))
+=> renvoie True
+
+Il ne reste plus qu'à faire l'encapsulation de tout ça !
